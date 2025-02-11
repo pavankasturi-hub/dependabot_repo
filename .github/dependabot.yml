@@ -6,4 +6,3 @@ updates:
       interval: "daily"         # Frequency of updates, can be "daily", "weekly", or "monthly"
     commit-message:
       prefix: "deps"             # Prefix for commit message
-    versioning-strategy: "increase"  # Options: "increase", "lockfile-only", "auto"
