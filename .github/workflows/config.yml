@@ -1,0 +1,47 @@
+name: PR check
+
+on:
+  push:
+    branches: [ main, gradle-56-main ]
+  pull_request:
+    branches: [ main, gradle-56-main ]
+  # can add push and pull_request here 
+  
+permissions:
+  contents: write
+  # Note that this permission will not be available if the PR is from a forked repository
+
+jobs:
+  inspect_gradle_projects:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+              # Gradle build
+
+      - name: Install Java
+        uses: actions/setup-java@v3
+        with:
+          java-version: "11"
+          distribution: "temurin"
+          cache: "gradle"
+
+      - name: Run gradlew task to analyse the runtime dependencies
+        uses: gradle/gradle-build-action@v2.9.0
+        env:
+          # Generate only for runtime, for now, because the github UI doesn't allow proper filtering and prioritising
+          DEPENDENCY_GRAPH_INCLUDE_CONFIGURATIONS: runtimeClasspath
+        with:
+          dependency-graph: generate-and-submit
+          build-root-directory: .
+          arguments: dependencies
+
+  dependency-review:
+    needs: inspect_gradle_projects
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+    - name: Perform dependency review
+      uses: actions/dependency-review-action@v3
+      

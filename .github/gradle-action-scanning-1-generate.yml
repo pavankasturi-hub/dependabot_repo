@@ -1,0 +1,36 @@
+name: run-build-and-generate-dependency-snapshot
+
+on:
+
+  # ONLY ON PRs
+  # push:
+  #   branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  # can add push and pull_request here 
+
+jobs:
+  inspect_gradle_projects:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+              # Gradle build
+
+      - name: Install Java
+        uses: actions/setup-java@v3
+        with:
+          java-version: "19"
+          distribution: "temurin"
+          cache: "gradle"
+
+      - name: Run gradlew task to analyse the runtime dependencies
+        uses: gradle/gradle-build-action@v2.9.0
+        env:
+          # Generate only for runtime, for now, because the github UI doesn't allow proper filtering and prioritising
+          DEPENDENCY_GRAPH_INCLUDE_CONFIGURATIONS: runtimeClasspath
+        with:
+          dependency-graph: generate
+          build-root-directory: .
+          arguments: dependencies
